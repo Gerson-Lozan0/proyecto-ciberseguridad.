@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro de Seguridad | SOC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <header class="topbar">
+        <div>
+            <h1>Centro de Operaciones de Seguridad</h1>
+            <p>Monitoreo y gestión de incidentes</p>
+        </div>
+        <span class="status">● Sistema activo</span>
+    </header>
+
+    <main class="container">
+
+        <section class="intro">
+            <h2>Panel de control</h2>
+            <p>Resumen general de seguridad informática</p>
+        </section>
+
+        <section class="metrics">
+            <article class="metric">
+                <span>Incidentes registrados</span>
+                <strong>{{ total }}</strong>
+            </article>
+
+            <article class="metric">
+                <span>Incidentes abiertos</span>
+                <strong>{{ abiertos }}</strong>
+            </article>
+
+            <article class="metric">
+                <span>MTTD promedio</span>
+                <strong>{{ mttd }}</strong>
+            </article>
+
+            <article class="metric">
+                <span>MTTR promedio</span>
+                <strong>{{ mttr }}</strong>
+            </article>
+        </section>
+
+        <section class="panel">
+            <h2>Registrar incidente</h2>
+
+            <form method="POST" action="{{ url_for('registrar') }}">
+               <input type="hidden" name="csrf_token" value="{{ csrf_token }}"> <label>Título del incidente</label>
+                <input type="text" name="titulo" maxlength="120" required>
+
+                <label>Descripción</label>
+                <textarea name="descripcion" maxlength="2000" required></textarea>
+
+                <label>Severidad</label>
+                <select name="severidad" required>
+                    <option value="Baja">Baja</option>
+                    <option value="Media">Media</option>
+                    <option value="Alta">Alta</option>
+                    <option value="Crítica">Crítica</option>
+                </select>
+
+                <label>Fecha y hora de ocurrencia</label>
+                <input type="datetime-local" name="ocurrido_en" required>
+
+                <label>Fecha y hora de detección</label>
+                <input type="datetime-local" name="detectado_en" required>
+
+                <button type="submit">Registrar incidente</button>
+            </form>
+        </section>
+
+        <section class="panel">
+            <h2>Incidentes registrados</h2>
+
+            {% if incidentes %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Severidad</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for incidente in incidentes %}
+                        <tr>
+                            <td>{{ incidente.id }}</td>
+                            <td>{{ incidente.titulo }}</td>
+                            <td>{{ incidente.severidad }}</td>
+                            <td>{{ incidente.estado }}</td>
+                            <td>
+                                {% if incidente.estado != 'Resuelto' %}
+                                <form method="POST" action="{{ url_for('resolver', incidente_id=incidente.id) }}">
+                                  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">  <button class="secondary" type="submit">
+                                        Marcar resuelto
+                                    </button>
+                                </form>
+                                {% else %}
+                                Resuelto
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="empty">Todavía no hay incidentes registrados.</p>
+            {% endif %}
+        </section>
+
+    </main>
+
+    <footer>
+        Proyecto de Ciberseguridad | Gestión de incidentes y métricas
+    </footer>
+
+</body>
+</html>
